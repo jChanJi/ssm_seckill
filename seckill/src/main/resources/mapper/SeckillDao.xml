@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.seckill.dao.SeckillDao">
+    <!--目的为Dao接口方法提供sql语句的配置-->
+    <!--update返回的是int所以不用写resulttype-->
+<update id="reduceNumber">
+    UPDATE
+    seckill
+    SET
+      number = number-1
+      WHERE  seckill_id = #{seckillId}
+      AND  start_time <![CDATA[<=]]> #{KillTime}
+      AND end_time >=#{KillTime}
+      AND number >0;
+</update>
+    <select id="queryById" resultType="Seckill" parameterType="long">
+        SELECT  seckill_id, name, number,start_time,end_time,create_time
+        FROM seckill
+        WHERE seckill_id = #{seckillId}
+    </select>
+    <select id="queryAll" resultType="Seckill">
+        SELECT  seckill_id,name,number,start_time,end_time,create_time
+        FROM seckill
+        ORDER BY create_time DESC
+        limit #{offset},#{limit}
+    </select>
+
+
+    <!--配置存储过程-->
+    <!--参数，参数的jdbcType,参数的模式-->
+    <!--参数的命名和seckillDao中的map的key一样-->
+    <select id="killByProcedure" statementType="CALLABLE">
+        call execute_seckill(
+        #{seckillId,jdbcType=BIGINT,mode=IN},
+        #{phone,jdbcType=BIGINT,mode=IN},
+        #{killTime,jdbcType=TIMESTAMP,mode=IN},
+        #{result,jdbcType=INTEGER,mode=OUT}
+        )
+    </select>
+</mapper>
